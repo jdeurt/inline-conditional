@@ -22,12 +22,10 @@ export class InlineConditional {
         this.condition = expression;
 
         return {
+            // eslint-disable-next-line unicorn/no-thenable
             then: (value: unknown) => {
-                if (value instanceof InlineConditional) {
-                    this.value = value.result;
-                } else {
-                    this.value = value;
-                }
+                this.value =
+                    value instanceof InlineConditional ? value.result : value;
 
                 return this;
             },
@@ -45,7 +43,7 @@ export class InlineConditional {
     get result() {
         const ladder: [unknown, unknown][] = [];
 
-        let curr:
+        let current:
             | {
                   parent?: InlineConditional;
                   condition: unknown;
@@ -57,14 +55,14 @@ export class InlineConditional {
             value: this.value,
         };
 
-        while (curr !== undefined) {
-            ladder.push([curr.condition, curr.value]);
+        while (current !== undefined) {
+            ladder.push([current.condition, current.value]);
 
-            curr = curr.parent
+            current = current.parent
                 ? {
-                      parent: curr.parent.parent,
-                      condition: curr.parent.condition,
-                      value: curr.parent.value,
+                      parent: current.parent.parent,
+                      condition: current.parent.condition,
+                      value: current.parent.value,
                   }
                 : undefined;
         }
