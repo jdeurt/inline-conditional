@@ -4,7 +4,7 @@ export class InlineConditional {
     private condition: unknown;
     private value?: unknown;
 
-    constructor(
+    private constructor(
         parent?: InlineConditional,
         condition?: unknown,
         value?: unknown
