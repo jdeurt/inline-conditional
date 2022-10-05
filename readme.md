@@ -1,21 +1,58 @@
-## Publishing
+# Inline Conditional
 
-Once all `TODO` notes have been updated & your new module is ready to be shared, all that's left to do is decide its new version &mdash; AKA, do the changes consitute a `patch`, `minor`, or `major` release?
+Create inline conditional statements!
 
-Once decided, you can run the following:
+## Why?
 
-```sh
-$ npm version <patch|minor|major> && git push origin master --tags && npm publish
-# Example:
-# npm version patch && git push origin master --tags && npm publish
+Mostly as a joke.
+
+## Installation
+
+```bash
+npm i inline-conditional
 ```
 
-This command sequence will:
+or
 
--   version your module, updating the `package.json` "version"
--   create and push a `git` tag (matching the new version) to your repository
--   build your module (via the `prepublishOnly` script)
--   publish the module to the npm registry
+```bash
+yarn add inline-conditional
+```
+
+## Usage
+
+```typescript
+import { InlineConditional } from "inline-conditional";
+
+// This
+let a;
+if (false) {
+    a = 0;
+} else if (true) {
+    a = 1;
+} else {
+    a = 2;
+}
+
+// Is the same as this
+const a = InlineConditional.if(false)
+    .then(0)
+    .else.if(true)
+    .then(1)
+    .otherwise(2).result;
+```
+
+You can also nest conditional chains!
+
+```typescript
+import { InlineConditional } from "inline-conditional";
+
+// a = 2
+const a = InlineConditional.if(false)
+    .then(0)
+    .else.if(true)
+    .then(InlineConditional.if(false).then(1).otherwise(2))
+    .otherwise(3).result;
+```
 
 ## License
 

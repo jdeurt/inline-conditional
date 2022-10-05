@@ -1,9 +1,9 @@
 {
     "version": "0.0.0",
-    "name": "TODO",
-    "umd:name": "TODO",
-    "repository": "TODO_USERNAME/TODO_REPO",
-    "description": "TODO_MODULE_DESCRIPTION",
+    "name": "inline-conditional",
+    "umd:name": "inline-conditional",
+    "repository": "jdeurt/inline-conditional",
+    "description": "Create inline conditional statements",
     "unpkg": "dist/index.min.js",
     "module": "dist/index.mjs",
     "main": "dist/index.js",
@@ -36,9 +36,8 @@
         "test": "jest"
     },
     "keywords": [
-        "TODO",
-        "module",
-        "keywords"
+        "inline",
+        "conditional"
     ],
     "devDependencies": {
         "@rollup/plugin-node-resolve": "13.1.3",
