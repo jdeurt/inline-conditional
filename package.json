@@ -37,7 +37,8 @@
     },
     "keywords": [
         "inline",
-        "conditional"
+        "conditional",
+        "switch"
     ],
     "devDependencies": {
         "@rollup/plugin-node-resolve": "13.1.3",

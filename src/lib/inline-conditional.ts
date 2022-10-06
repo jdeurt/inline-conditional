@@ -1,3 +1,5 @@
+import { InlineSwitch } from "./inline-switch";
+
 export class InlineConditional {
     private parent?: InlineConditional;
 
@@ -12,6 +14,10 @@ export class InlineConditional {
         this.parent = parent;
         this.condition = condition;
         this.value = value;
+    }
+
+    static switch<T>(value: T) {
+        return InlineSwitch.switch(value);
     }
 
     static if(expression: unknown) {

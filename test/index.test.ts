@@ -39,3 +39,17 @@ describe("Inline conditional", () => {
         expect(result).toEqual(3);
     });
 });
+
+describe("Inline switch", () => {
+    it("Should behave like a switch statement", () => {
+        const { result } = InlineConditional.switch("c")
+            .case("a")
+            .do(() => 1)
+            .case("b")
+            .do(() => 2)
+            .case("c")
+            .do(() => 3);
+
+        expect(result).toEqual(3);
+    });
+});

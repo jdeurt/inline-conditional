@@ -54,6 +54,21 @@ const a = InlineConditional.if(false)
     .otherwise(3).result;
 ```
 
+New in version 1.0.0: Inline switch statements
+
+```typescript
+import { InlineConditional } from "inline-conditional";
+
+// result = 3
+const result = InlineConditional.switch("c")
+    .case("a")
+    .do(() => 1)
+    .case("b")
+    .do(() => 2)
+    .case("c")
+    .do(() => 3).result;
+```
+
 ## License
 
 MIT © [Juan de Urtubey](https://jdeurt.xyz)
