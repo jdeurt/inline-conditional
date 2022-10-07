@@ -35,6 +35,17 @@ export class InlineSwitch<T, R> extends Resolvable<R> {
         };
     }
 
+    default(expression: MaybeFunction<R> | Resolvable<R>) {
+        const pair: [T, MaybeFunction<R>] = [
+            this.value,
+            Resolvable.resolve(expression),
+        ];
+
+        this.pairs.push(pair);
+
+        return this;
+    }
+
     get result() {
         const matched = this.pairs.find((pair) => pair[0] === this.value);
 

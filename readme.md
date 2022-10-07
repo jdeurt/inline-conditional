@@ -36,9 +36,9 @@ if (false) {
 // Is the same as this
 const a = InlineConditional.if(false)
     .then(0)
-    .else.if(true)
+    .elseIf(true)
     .then(1)
-    .otherwise(2).result;
+    .else(2).result;
 ```
 
 You can also nest conditional chains!
@@ -49,24 +49,52 @@ import { InlineConditional } from "inline-conditional";
 // a = 2
 const a = InlineConditional.if(false)
     .then(0)
-    .else.if(true)
-    .then(InlineConditional.if(false).then(1).otherwise(2))
-    .otherwise(3).result;
+    .elseIf(true)
+    .then(InlineConditional.if(false).then(1).else(2))
+    .else(3).result;
 ```
 
-New in version 1.0.0: Inline switch statements
+Switch statements are also supported
 
 ```typescript
-import { InlineConditional } from "inline-conditional";
+import { InlineSwitch } from "inline-conditional";
 
 // result = 3
-const result = InlineConditional.switch("c")
+const result = InlineSwitch.switch("c")
     .case("a")
-    .do(() => 1)
+    .do(1)
     .case("b")
-    .do(() => 2)
+    .do(2)
     .case("c")
-    .do(() => 3).result;
+    .do(3).result;
+```
+
+## React example
+
+```tsx
+import { Inline } from "inline-conditional";
+
+interface ComponentProps {
+    foo: number;
+    bar?: string;
+}
+
+export const Component = ({ foo, bar }: ComponentProps) => (
+    <span>
+        {
+            Inline.if(bar === undefined)
+                .then("Nothing...")
+                .else(
+                    Inline.switch(foo)
+                        .case(1)
+                        .do(bar)
+                        .case(0)
+                        .do(`Not ${bar}`)
+                        .default("Uh oh!")
+                ).result
+        }
+    </span>
+);
 ```
 
 ## License

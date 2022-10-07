@@ -50,7 +50,17 @@ describe("Inline switch", () => {
             .case("c")
             .do(3);
 
+        const { result: result2 } = Inline.switch("c")
+            .case("a")
+            .do(1)
+            .case("b")
+            .do(2)
+            .case("d")
+            .do(3)
+            .default(4);
+
         expect(result).toEqual(3);
+        expect(result2).toEqual(4);
     });
 
     it("Should work with a nested switch flow", () => {
