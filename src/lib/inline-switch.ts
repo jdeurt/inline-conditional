@@ -1,26 +1,34 @@
-export class InlineSwitch<T> {
+import { MaybeFunction } from "../types/maybe-function";
+import { extract } from "../util/extract";
+import { Resolvable } from "./resolvable";
+
+export class InlineSwitch<T, R> extends Resolvable<R> {
     private value: T;
-    private pairs: [T, () => unknown][];
+    private pairs: [T, MaybeFunction<R>][];
 
     private constructor(value: T) {
+        super();
+
         this.value = value;
         this.pairs = [];
     }
 
-    static switch<T>(value: T) {
-        return new InlineSwitch(value);
+    static switch<T, R>(value: T) {
+        return new InlineSwitch<T, R>(value);
     }
 
     case(matchValue: T): {
-        do: (operation: () => unknown) => InlineSwitch<T>;
+        do: (
+            expression: MaybeFunction<R> | Resolvable<R>
+        ) => InlineSwitch<T, R>;
     } {
-        this.pairs.push([matchValue, () => void 0]);
+        this.pairs.push([matchValue, undefined as unknown as R]);
 
         const targetPair = this.pairs[this.pairs.length - 1];
 
         return {
-            do: (operation: () => unknown) => {
-                targetPair[1] = operation;
+            do: (expression: MaybeFunction<R> | Resolvable<R>) => {
+                targetPair[1] = Resolvable.resolve(expression);
 
                 return this;
             },
@@ -30,6 +38,10 @@ export class InlineSwitch<T> {
     get result() {
         const matched = this.pairs.find((pair) => pair[0] === this.value);
 
-        return matched?.[1]();
+        if (matched === undefined) {
+            return;
+        }
+
+        return extract(matched[1]);
     }
 }

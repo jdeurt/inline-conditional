@@ -1,78 +1,61 @@
-import { InlineSwitch } from "./inline-switch";
+import { MaybeFunction } from "../types/maybe-function";
+import { extract } from "../util/extract";
+import { Resolvable } from "./resolvable";
 
-export class InlineConditional {
-    private parent?: InlineConditional;
+export class InlineConditional<R> extends Resolvable<R> {
+    private pairs: [unknown, MaybeFunction<R>][];
 
-    private condition: unknown;
-    private value?: unknown;
+    private constructor(pairs?: [unknown, MaybeFunction<R>][]) {
+        super();
 
-    private constructor(
-        parent?: InlineConditional,
-        condition?: unknown,
-        value?: unknown
-    ) {
-        this.parent = parent;
-        this.condition = condition;
-        this.value = value;
+        this.pairs = pairs ?? [];
     }
 
-    static switch<T>(value: T) {
-        return InlineSwitch.switch(value);
+    static if<R>(expression: unknown) {
+        return new InlineConditional<R>().elseIf(expression);
     }
 
-    static if(expression: unknown) {
-        return new InlineConditional().if(expression);
-    }
+    elseIf(expression: unknown): {
+        then: (
+            result: MaybeFunction<R> | Resolvable<R>
+        ) => InlineConditional<R>;
+    } {
+        this.pairs.push([expression, undefined as unknown as R]);
 
-    if(expression: unknown): { then: (value: unknown) => InlineConditional } {
-        this.condition = expression;
+        const targetPair = this.pairs[this.pairs.length - 1];
 
         return {
             // eslint-disable-next-line unicorn/no-thenable
-            then: (value: unknown) => {
-                this.value =
-                    value instanceof InlineConditional ? value.result : value;
+            then: (result: MaybeFunction<R> | Resolvable<R>) => {
+                targetPair[1] = Resolvable.resolve(result);
 
                 return this;
             },
         };
     }
 
-    otherwise(value: unknown) {
-        return new InlineConditional(this, true, value);
+    elif(expression: unknown) {
+        return this.elseIf(expression);
     }
 
-    get else() {
-        return new InlineConditional(this, false);
+    else(result: MaybeFunction<R> | Resolvable<R>) {
+        const pair: [boolean, MaybeFunction<R>] = [
+            true,
+            Resolvable.resolve(result),
+        ];
+
+        this.pairs.push(pair);
+
+        return this;
     }
 
     get result() {
-        const ladder: [unknown, unknown][] = [];
+        const matched = this.pairs.find((pair) => !!pair[0]);
 
-        let current:
-            | {
-                  parent?: InlineConditional;
-                  condition: unknown;
-                  value?: unknown;
-              }
-            | undefined = {
-            parent: this.parent,
-            condition: this.condition,
-            value: this.value,
-        };
-
-        while (current !== undefined) {
-            ladder.push([current.condition, current.value]);
-
-            current = current.parent
-                ? {
-                      parent: current.parent.parent,
-                      condition: current.parent.condition,
-                      value: current.parent.value,
-                  }
-                : undefined;
+        if (matched === undefined) {
+            return;
         }
 
-        return ladder.reverse().find((pair) => !!pair[0] === true)?.[1];
+        return extract(matched[1]);
     }
 }
