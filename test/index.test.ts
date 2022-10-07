@@ -1,4 +1,27 @@
+/* eslint-disable unicorn/no-useless-undefined */
 import { Inline } from "../src/";
+
+function mockFunction({
+    event,
+    flag,
+    id,
+}: {
+    event: "PUSH" | "PULL" | "CLONE";
+    flag: number;
+    id: string;
+}) {
+    const { result } = Inline.if<() => string>(flag === 0, () => {
+        throw new Error("Operation prohibited");
+    }).else(
+        Inline.switch<typeof event, () => string>(event)
+            .case("CLONE", () => `Cloned ${id}`)
+            .case("PULL", () => `Pulled ${id}`)
+            .case("PUSH", () => `Pushed ${id}`)
+            .default(Inline.if(flag === -1, () => `Secret action!`))
+    );
+
+    return result;
+}
 
 describe("Inline conditional", () => {
     it("Should work with a basic if-then flow", () => {
@@ -73,5 +96,37 @@ describe("Inline switch", () => {
             .do(Inline.if(false).then(3).else(4));
 
         expect(result).toEqual(4);
+    });
+});
+
+describe("Complex behavior", () => {
+    it("Should correctly handle complex nested behavior", () => {
+        expect(
+            mockFunction({ event: "CLONE", flag: 0, id: "12345" })
+        ).toThrow();
+
+        expect(
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            mockFunction({ event: "DNE", flag: 1, id: "12345" })
+        ).toEqual(undefined);
+
+        expect(
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            mockFunction({ event: "DNE", flag: -1, id: "12345" })?.()
+        ).toEqual("Secret action!");
+
+        expect(
+            mockFunction({ event: "CLONE", flag: 1, id: "12345" })?.()
+        ).toEqual("Cloned 12345");
+
+        expect(
+            mockFunction({ event: "PULL", flag: 1, id: "12345" })?.()
+        ).toEqual("Pulled 12345");
+
+        expect(
+            mockFunction({ event: "PUSH", flag: 1, id: "12345" })?.()
+        ).toEqual("Pushed 12345");
     });
 });
