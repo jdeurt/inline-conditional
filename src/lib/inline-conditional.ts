@@ -29,7 +29,7 @@ export class InlineConditional<R> extends Resolvable<R> {
      */
     static if<R>(
         expression: unknown,
-        result: unknown | Resolvable<unknown>
+        result: R | Resolvable<R>
     ): InlineConditional<R>;
     static if<R>(expression: unknown, result?: unknown | Resolvable<unknown>) {
         return arguments.length === 1
