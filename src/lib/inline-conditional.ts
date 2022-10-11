@@ -31,7 +31,7 @@ export class InlineConditional<R> extends Resolvable<R> {
         expression: unknown,
         result: R | Resolvable<R>
     ): InlineConditional<R>;
-    static if<R>(expression: unknown, result?: unknown | Resolvable<unknown>) {
+    static if<R>(expression: unknown, result?: R | Resolvable<R>) {
         return arguments.length === 1
             ? new InlineConditional<R>().elseIf(expression)
             : new InlineConditional<R>().elseIf(
