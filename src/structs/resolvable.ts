@@ -1,9 +1,8 @@
-export class Resolvable<R> {
-    protected static resolve<R>(value: R | Resolvable<R>): R {
-        return value instanceof Resolvable ? (value.result as R) : value;
-    }
+export class Resolvable<T> {
+    protected result?: T;
+    protected fallbackValue?: T;
 
-    get result(): R | undefined {
-        return undefined;
+    protected getResult() {
+        return this.result === undefined ? this.fallbackValue : this.result;
     }
 }

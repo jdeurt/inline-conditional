@@ -10,7 +10,7 @@ function mockFunction({
     flag: number;
     id: string;
 }) {
-    const { result } = Inline.if<() => string>(flag === 0, () => {
+    const result = Inline.if<() => string>(flag === 0, () => {
         throw new Error("Operation prohibited");
     }).else(
         Inline.switch<typeof event, () => string>(event)
@@ -25,39 +25,30 @@ function mockFunction({
 
 describe("Inline conditional", () => {
     it("Should work with a basic if-then flow", () => {
-        const { result } = Inline.if(true).then(1);
+        const result = Inline.if(true)(1).else(undefined);
 
         expect(result).toEqual(1);
     });
 
     it("Should work with a basic if-then-otherwise flow", () => {
-        const { result } = Inline.if(false).then(1).else(2);
+        const result = Inline.if(false)(1).else(2);
 
         expect(result).toEqual(2);
     });
 
     it("Should work with a if-then-else-if-then-otherwise flow", () => {
-        const { result: result1 } = Inline.if(false)
-            .then(1)
-            .elif(false)
-            .then(2)
-            .else(3);
+        const result1 = Inline.if(false)(1).elif(false)(2).else(3);
 
-        const { result: result2 } = Inline.if(false)
-            .then(1)
-            .elif(true)
-            .then(2)
-            .else(3);
+        const result2 = Inline.if(false)(1).elif(true)(2).else(3);
 
         expect(result1).toEqual(3);
         expect(result2).toEqual(2);
     });
 
     it("Should work with a nested conditional flow", () => {
-        const { result } = Inline.if(false)
-            .then(1)
-            .elif(true)
-            .then(Inline.if(false).then(2).else(3));
+        const result = Inline.if(false)(1)
+            .elif(true)(Inline.if(false)(2).else(3))
+            .else(undefined);
 
         expect(result).toEqual(3);
     });
@@ -65,35 +56,28 @@ describe("Inline conditional", () => {
 
 describe("Inline switch", () => {
     it("Should behave like a switch statement", () => {
-        const { result } = Inline.switch("c")
-            .case("a")
-            .do(1)
-            .case("b")
-            .do(2)
-            .case("c")
-            .do(3);
+        const result1 = Inline.switch("c")
+            .case("a")(1)
+            .case("b")(2)
+            .case("c")(3)
+            .default(undefined);
 
-        const { result: result2 } = Inline.switch("c")
-            .case("a")
-            .do(1)
-            .case("b")
-            .do(2)
-            .case("d")
-            .do(3)
+        const result2 = Inline.switch("c")
+            .case("a")(1)
+            .case("b")(2)
+            .case("d")(3)
             .default(4);
 
-        expect(result).toEqual(3);
+        expect(result1).toEqual(3);
         expect(result2).toEqual(4);
     });
 
     it("Should work with a nested switch flow", () => {
-        const { result } = Inline.switch("c")
-            .case("a")
-            .do(1)
-            .case("b")
-            .do(2)
-            .case("c")
-            .do(Inline.if(false).then(3).else(4));
+        const result = Inline.switch("c")
+            .case("a")(1)
+            .case("b")(2)
+            .case("c")(Inline.if(false)(3).else(4))
+            .default(undefined);
 
         expect(result).toEqual(4);
     });

@@ -1,31 +1,20 @@
 import { Resolvable } from "../structs/resolvable";
-
-export type InlineConditionalActionFunction<R> = (
-    result: R | Resolvable<R>
-) => InlineConditional<R>;
+import { resolve } from "../util/resolve";
 
 export class InlineConditional<R> extends Resolvable<R> {
-    private pairs: [unknown, R][];
-
-    private constructor(pairs?: [unknown, R][]) {
-        super();
-
-        this.pairs = pairs ?? [];
-    }
-
     /**
-     * Starts a new inline conditional chain
-     * @param expression An expression to test the truthiness of
+     * Starts a new inline conditional chain.
+     * @param expression An expression to test the truthiness of.
      *
-     * @returns an object that contains a `then` function that allows you to specify the value that should be returned if `expression` is truthy
+     * @returns A function that allows you to specify the value that should be returned if `expression` is truthy.
      */
-    static if<R>(expression: unknown): {
-        then: InlineConditionalActionFunction<R>;
-    };
+    static if<R>(
+        expression: unknown
+    ): (result: R | Resolvable<R>) => InlineConditional<R>;
     /**
-     * Starts a new inline conditional chain
-     * @param expression An expression to test the truthiness of
-     * @param result The value that should be returned if `expression` is truthy
+     * Starts a new inline conditional chain.
+     * @param expression An expression to test the truthiness of.
+     * @param result The value that should be returned if `expression` is truthy.
      */
     static if<R>(
         expression: unknown,
@@ -34,87 +23,56 @@ export class InlineConditional<R> extends Resolvable<R> {
     static if<R>(expression: unknown, result?: R | Resolvable<R>) {
         return arguments.length === 1
             ? new InlineConditional<R>().elseIf(expression)
-            : new InlineConditional<R>().elseIf(
-                  expression,
-                  result as R | Resolvable<R>
-              );
+            : new InlineConditional<R>().elseIf(expression, result!);
     }
 
     /**
-     * Continues an inline conditional chain
-     * @param expression An expression to test the truthiness of
+     * Continues an inline conditional chain.
+     * @param expression An expression to test the truthiness of.
      *
-     * @returns an object that contains a `then` function that allows you to specify the value that should be returned if `expression` is truthy
+     * @returns A function that allows you to specify the value that should be returned if `expression` is truthy.
      */
-    elseIf(expression: unknown): {
-        then: InlineConditionalActionFunction<R>;
-    };
+    elseIf(expression: unknown): (result: R | Resolvable<R>) => this;
     /**
-     * Continues an inline conditional chain
-     * @param expression An expression to test the truthiness of
-     * @param result The value that should be returned if `expression` is truthy
+     * Continues an inline conditional chain.
+     * @param expression An expression to test the truthiness of.
+     * @param result The value that should be returned if `expression` is truthy.
      */
-    elseIf(
-        expression: unknown,
-        result: R | Resolvable<R>
-    ): InlineConditional<R>;
+    elseIf(expression: unknown, result: R | Resolvable<R>): this;
     elseIf(expression: unknown, result?: R | Resolvable<R>) {
-        this.pairs.push([expression, undefined as unknown as R]);
-
-        const targetPair = this.pairs[this.pairs.length - 1];
-
-        const thenCallback: InlineConditionalActionFunction<R> = (
-            result: R | Resolvable<R>
-        ) => {
-            targetPair[1] = Resolvable.resolve(result);
+        const action = (result: R | Resolvable<R>) => {
+            if (!!expression && this.result === undefined)
+                this.result = resolve(result);
 
             return this;
         };
 
-        return arguments.length === 1
-            ? // eslint-disable-next-line unicorn/no-thenable
-              { then: thenCallback }
-            : thenCallback(result as R | Resolvable<R>);
+        return arguments.length === 1 ? action : action(result!);
     }
 
     /**
-     * An alias for `<InlineConditional>.elseIf`
+     * An alias for `<InlineConditional>.elseIf`.
      */
-    elif(expression: unknown): {
-        then: InlineConditionalActionFunction<R>;
-    };
+    elif(expression: unknown): (result: R | Resolvable<R>) => this;
     /**
-     * An alias for `<InlineConditional>.elseIf`
+     * An alias for `<InlineConditional>.elseIf`.
      */
-    elif(expression: unknown, result: R | Resolvable<R>): InlineConditional<R>;
+    elif(expression: unknown, result: R | Resolvable<R>): this;
     elif(expression: unknown, result?: R | Resolvable<R>) {
         return arguments.length === 1
             ? this.elseIf(expression)
-            : this.elseIf(expression, result as R | Resolvable<R>);
+            : this.elseIf(expression, result!);
     }
 
     /**
-     * Provides a fallback value for the inline conditional chain
-     * @param result The value that should be returned if the previous `if` and `elseIf` expressions are all falsy
+     * Provides a fallback value for the inline conditional chain and completes the chain.
+     * @param result The value that should be returned if the previous `if` and `elseIf` expressions are all falsy.
+     *
+     * @returns The result of the chain.
      */
-    else(result: R | Resolvable<R>) {
-        const pair: [boolean, R] = [true, Resolvable.resolve(result)];
+    else(result: R | Resolvable<R>): R {
+        this.fallbackValue = resolve(result);
 
-        this.pairs.push(pair);
-
-        return this;
-    }
-
-    /**
-     * The result of evaluating the inline conditional chain
-     */
-    get result() {
-        const matched = this.pairs.find((pair) => !!pair[0]);
-
-        if (matched === undefined) {
-            return;
-        }
-
-        return matched[1];
+        return this.getResult() as R;
     }
 }
