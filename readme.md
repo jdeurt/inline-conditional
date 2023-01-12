@@ -79,7 +79,10 @@ const Page = () => {
 
     return (
         <Template>
-            {Inline.if(isLoggedIn)(<UserPage />).else(<AccessDenied />)}
+            {Inline.if(isLoggedIn)(
+                // Use functions to prevent components from being called when they're not relevant
+                () => <UserPage />
+            ).else(() => <AccessDenied />)()}
         </Template>
     );
 };
