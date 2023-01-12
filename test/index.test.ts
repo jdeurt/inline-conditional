@@ -27,6 +27,8 @@ describe("Inline conditional", () => {
     it("Should work with a basic if-then flow", () => {
         const result = Inline.if(true)(1).else(undefined);
 
+        const result2 = Inline.if(true, 1).elif(true)("a");
+
         expect(result).toEqual(1);
     });
 
@@ -76,10 +78,10 @@ describe("Inline switch", () => {
         const result = Inline.switch("c")
             .case("a")(1)
             .case("b")(2)
-            .case("c")(Inline.if(false)(3).else(4))
+            .case("c")(Inline.if(false)(3))
             .default(undefined);
 
-        expect(result).toEqual(4);
+        expect(result).toEqual(undefined);
     });
 });
 
