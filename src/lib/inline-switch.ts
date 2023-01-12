@@ -1,22 +1,29 @@
 import { Resolvable } from "../structs/resolvable";
-import { resolve } from "../util/resolve";
 
 export class InlineSwitch<T, U> extends Resolvable<U> {
     private observed: T;
 
-    private constructor(value: T, result?: U, fallbackValue?: U) {
+    private constructor(value: T) {
         super();
 
         this.observed = value;
-        this.result = result;
-        this.fallbackValue = fallbackValue;
+    }
+
+    private constructNext<V>(matchValue: T, result: V): InlineSwitch<T, U | V> {
+        const nextInChain = new InlineSwitch<T, U | V>(this.observed);
+
+        if (matchValue === this.observed && !this.isResultAssigned) {
+            nextInChain.result = result;
+        }
+
+        return nextInChain;
     }
 
     /**
      * Starts a new inline switch chain.
      * @param value The value to test the cases against.
      */
-    static switch<T, U>(value: T) {
+    static switch<T, U = never>(value: T) {
         return new InlineSwitch<T, U>(value);
     }
 
@@ -26,22 +33,15 @@ export class InlineSwitch<T, U> extends Resolvable<U> {
      *
      * @returns A function that allows you to specify the value that should be returned if `matchValue` matches the original `value` provided to the `InlineSwitch.switch` call.
      */
-    case(matchValue: T): <V>(result: V | Resolvable<V>) => InlineSwitch<T, V>;
+    case(matchValue: T): <V>(result: V) => InlineSwitch<T, U | V>;
     /**
      * Continues an inline switch chain.
      * @param matchValue A value to test against the original `value` provided to the `InlineSwitch.switch` call.
      * @param result The value that should be returned if `matchValue` matches the original `value` provided to the `InlineSwitch.switch` call.
      */
-    case<V>(matchValue: T, result: V | Resolvable<V>): InlineSwitch<T, V>;
-    case<V>(matchValue: T, result?: V | Resolvable<V>) {
-        const action = <V>(result: V | Resolvable<V>) => {
-            return new InlineSwitch<T, U | V>(
-                this.observed,
-                matchValue === this.observed && this.result === undefined
-                    ? resolve(result)
-                    : this.result
-            );
-        };
+    case<V>(matchValue: T, result: V): InlineSwitch<T, U | V>;
+    case<V>(matchValue: T, result?: V) {
+        const action = <V>(result: V) => this.constructNext(matchValue, result);
 
         return arguments.length === 1 ? action : action(result!);
     }
@@ -52,11 +52,9 @@ export class InlineSwitch<T, U> extends Resolvable<U> {
      *
      * @returns The result of the chain.
      */
-    default<V>(result: V | Resolvable<V>): U | V {
-        return new InlineSwitch<T, U | V>(
-            this.observed,
-            this.result,
-            resolve(result)
-        ).getResult() as U | V;
+    default<V>(fallbackValue: V): U | V {
+        this.fallbackValue = fallbackValue as unknown as U;
+
+        return this.getResult();
     }
 }
