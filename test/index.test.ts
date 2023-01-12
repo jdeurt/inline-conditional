@@ -27,8 +27,6 @@ describe("Inline conditional", () => {
     it("Should work with a basic if-then flow", () => {
         const result = Inline.if(true)(1).else(undefined);
 
-        const result2 = Inline.if(true, 1).elif(true)("a");
-
         expect(result).toEqual(1);
     });
 
