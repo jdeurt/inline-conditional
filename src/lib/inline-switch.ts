@@ -9,16 +9,6 @@ export class InlineSwitch<T, U> extends Resolvable<U> {
         this.observed = value;
     }
 
-    private constructNext<V>(matchValue: T, result: V): InlineSwitch<T, U | V> {
-        const nextInChain = new InlineSwitch<T, U | V>(this.observed);
-
-        if (matchValue === this.observed && !this.isResultAssigned) {
-            nextInChain.result = result;
-        }
-
-        return nextInChain;
-    }
-
     /**
      * Starts a new inline switch chain.
      * @param value The value to test the cases against.
@@ -41,7 +31,8 @@ export class InlineSwitch<T, U> extends Resolvable<U> {
      */
     case<V>(matchValue: T, result: V): InlineSwitch<T, U | V>;
     case<V>(matchValue: T, result?: V) {
-        const action = <V>(result: V) => this.constructNext(matchValue, result);
+        const action = <S>(actionResult: S) =>
+            this.constructNext(matchValue, actionResult);
 
         return arguments.length === 1 ? action : action(result!);
     }
@@ -56,5 +47,15 @@ export class InlineSwitch<T, U> extends Resolvable<U> {
         this.fallbackValue = fallbackValue as unknown as U;
 
         return this.getResult();
+    }
+
+    private constructNext<V>(matchValue: T, result: V): InlineSwitch<T, U | V> {
+        const nextInChain = new InlineSwitch<T, U | V>(this.observed);
+
+        if (matchValue === this.observed && !this.isResultAssigned) {
+            nextInChain.result = result;
+        }
+
+        return nextInChain;
     }
 }

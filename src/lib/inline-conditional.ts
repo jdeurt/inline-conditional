@@ -1,26 +1,13 @@
 import { Resolvable } from "../structs/resolvable";
 
 export class InlineConditional<T> extends Resolvable<T> {
-    private constructNext<U>(
-        expression: unknown,
-        result: U
-    ): InlineConditional<T | U> {
-        const nextInChain = new InlineConditional<T | U>();
-
-        if (Boolean(expression) && !this.isResultAssigned) {
-            nextInChain.result = result;
-        }
-
-        return nextInChain;
-    }
-
     /**
      * Starts a new inline conditional chain.
      * @param expression An expression to test the truthiness of.
      *
      * @returns A function that allows you to specify the value that should be returned if `expression` is truthy.
      */
-    static if(expression: unknown): <T>(result: T) => InlineConditional<T>;
+    static if(expression: unknown): <U>(result: U) => InlineConditional<U>;
     /**
      * Starts a new inline conditional chain.
      * @param expression An expression to test the truthiness of.
@@ -47,7 +34,8 @@ export class InlineConditional<T> extends Resolvable<T> {
      */
     elseIf<U>(expression: unknown, result: U): InlineConditional<T | U>;
     elseIf<U>(expression: unknown, result?: U) {
-        const action = <U>(result: U) => this.constructNext(expression, result);
+        const action = <V>(actionResult: V) =>
+            this.constructNext(expression, actionResult);
 
         return arguments.length === 1 ? action : action(result!);
     }
@@ -76,5 +64,18 @@ export class InlineConditional<T> extends Resolvable<T> {
         this.fallbackValue = fallbackValue as unknown as T;
 
         return this.getResult();
+    }
+
+    private constructNext<U>(
+        expression: unknown,
+        result: U
+    ): InlineConditional<T | U> {
+        const nextInChain = new InlineConditional<T | U>();
+
+        if (Boolean(expression) && !this.isResultAssigned) {
+            nextInChain.result = result;
+        }
+
+        return nextInChain;
     }
 }

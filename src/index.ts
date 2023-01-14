@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { InlineConditional } from "./lib/inline-conditional";
 import { InlineSwitch } from "./lib/inline-switch";
 

@@ -3,6 +3,7 @@ export class Resolvable<T> {
     protected fallbackValue?: T;
 
     protected constructor() {
+        // Declaring fields as optional initializes them to undefined
         Reflect.deleteProperty(this, "result");
         Reflect.deleteProperty(this, "fallbackValue");
     }
